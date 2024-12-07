@@ -11,6 +11,7 @@ async function bootstrap() {
       'The Project Academia for Tejgaon College CSE Fest Hackathon 2024',
     )
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);

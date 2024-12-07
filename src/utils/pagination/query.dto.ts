@@ -8,7 +8,6 @@ export type IPaginationQuery = {
 };
 
 // Query
-
 export const SearchQuery: ApiQueryOptions = {
   name: 'search',
   type: 'string',

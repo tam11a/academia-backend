@@ -30,7 +30,7 @@ model User {
 model Profile {
   id                Int       @id @default(autoincrement())
   user_id           Int       @unique
-  user              User      @relation(fields: [user_id], references: [id])
+  user              User      @relation(fields: [user_id], references: [id], onDelete: Cascade) // On delete user, delete profile
   first_name        String
   last_name         String?
   bio               String?
