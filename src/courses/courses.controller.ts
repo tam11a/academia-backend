@@ -6,10 +6,18 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { ApiQuery } from '@nestjs/swagger';
+import {
+  IPaginationQuery,
+  LimitQuery,
+  PageQuery,
+  SearchQuery,
+} from 'src/utils/pagination/query.dto';
 
 @Controller('courses')
 export class CoursesController {
@@ -21,8 +29,20 @@ export class CoursesController {
   }
 
   @Get()
-  findAll() {
-    return this.coursesService.findAll();
+  @ApiQuery({
+    name: 'course_status',
+    required: false,
+    enum: ['PLANNED', 'ENROLLING', 'ONGOING', 'COMPLETED'],
+  })
+  @ApiQuery(PageQuery) // PageQuery, reusing the PageQuery from the pagination query
+  @ApiQuery(LimitQuery) // LimitQuery, reusing the LimitQuery from the pagination query
+  @ApiQuery(SearchQuery) // SearchQuery, reusing the SearchQuery from the pagination query
+  findAll(
+    @Query() query: IPaginationQuery,
+    @Query('course_status')
+    course_status?: 'PLANNED' | 'ENROLLING' | 'ONGOING' | 'COMPLETED',
+  ) {
+    return this.coursesService.findAll(query, course_status);
   }
 
   @Get(':id')

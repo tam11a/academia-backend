@@ -232,7 +232,7 @@ export class UsersService {
 
   async remove(id: number) {
     if (!id) {
-      throw new BadRequestException('User id is required');
+      throw new BadRequestException('Please provide a valid user id');
     }
 
     try {
