@@ -25,8 +25,23 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       });
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
+
+      const auth_session = await this.prisma.authSession.findUnique({
+        where: {
+          user_id: payload.sub,
+          token,
+        },
+      });
+
+      if (!auth_session) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      if (auth_session.expired_at) {
+        throw new UnauthorizedException(
+          `Token expired at ${auth_session.expired_at}`,
+        );
+      }
 
       const user = await this.prisma.user.findUnique({
         where: {
@@ -68,6 +83,7 @@ export class AuthGuard implements CanActivate {
         );
 
       request['user'] = user;
+      request['auth_session'] = auth_session;
     } catch {
       throw new UnauthorizedException();
     }

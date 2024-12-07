@@ -39,13 +39,22 @@ export class AuthService {
       throw new BadRequestException('Invalid Password');
     }
 
+    const access_token = await this.jwtService.signAsync({
+      sub: user.id,
+      username: user.username,
+      user_role: user.user_role,
+    });
+
+    await this.prisma.authSession.create({
+      data: {
+        user_id: user.id,
+        token: access_token,
+      },
+    });
+
     // Return the user
     return {
-      access_token: await this.jwtService.signAsync({
-        sub: user.id,
-        username: user.username,
-        user_role: user.user_role,
-      }),
+      access_token,
       token_type: 'bearer',
       expires_in: process.env.JWT_EXPIRY || '3d',
     };
@@ -55,7 +64,19 @@ export class AuthService {
     return user;
   }
 
-  logout() {
-    return 'This action logs out the user';
+  async logout(auth_session: any) {
+    // Update the auth session to expire the token
+    await this.prisma.authSession.update({
+      where: {
+        id: auth_session.id,
+      },
+      data: {
+        expired_at: new Date(),
+      },
+    });
+
+    return {
+      message: 'Logged out successfully',
+    };
   }
 }

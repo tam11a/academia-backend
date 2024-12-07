@@ -27,8 +27,10 @@ export class AuthController {
     return this.authService.validate(req.user);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Get('logout')
-  logout() {
-    return 'This action logs out the user';
+  logout(@Request() req) {
+    return this.authService.logout(req.auth_session);
   }
 }

@@ -25,6 +25,8 @@ model User {
   is_active  Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  auth_sessions AuthSession[]
 }
 
 model Profile {
@@ -42,6 +44,16 @@ model Profile {
   secondary_address String?
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
+}
+
+model AuthSession {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade) // On delete user, delete session
+  token      String    @unique
+  expired_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
 }
 
 enum UserRole {
