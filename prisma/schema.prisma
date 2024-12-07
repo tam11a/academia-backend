@@ -26,7 +26,15 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  auth_sessions AuthSession[]
+  auth_sessions                  AuthSession[]
+  CourseSectionEnrollment        CourseSectionEnrollment[]
+  CourseSectionFacultyAssignment CourseSectionFacultyAssignment[]
+}
+
+enum UserRole {
+  STUDENT
+  FACULTY
+  ADMIN
 }
 
 model Profile {
@@ -56,8 +64,101 @@ model AuthSession {
   updated_at DateTime  @updatedAt
 }
 
-enum UserRole {
-  STUDENT
-  FACULTY
-  ADMIN
+model Course {
+  id                 Int             @id @default(autoincrement())
+  course_title       String
+  course_description String?
+  course_cover_url   String?
+  course_start_date  DateTime
+  course_end_date    DateTime
+  course_code        String
+  course_credits     Float
+  course_status      CourseStatus    @default(PLANNED)
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+  CourseSection      CourseSection[]
+}
+
+enum CourseStatus {
+  PLANNED
+  ENROLLING
+  ONGOING
+  COMPLETED
+}
+
+model CourseSection {
+  id                             Int                              @id @default(autoincrement())
+  course_id                      Int
+  course                         Course                           @relation(fields: [course_id], references: [id], onDelete: Cascade) // On delete course, delete section
+  section_title                  String
+  section_description            String?
+  section_start_date             DateTime
+  section_end_date               DateTime
+  section_total_seats            Int
+  section_status                 SectionStatus                    @default(PLANNED)
+  created_at                     DateTime                         @default(now())
+  updated_at                     DateTime                         @updatedAt
+  CourseSectionMaterial          CourseSectionMaterial[]
+  CourseSectionEnrollment        CourseSectionEnrollment[]
+  CourseSectionFacultyAssignment CourseSectionFacultyAssignment[]
+}
+
+enum SectionStatus {
+  PLANNED
+  ENROLLING
+  ONGOING
+  COMPLETED
+}
+
+model CourseSectionEnrollment {
+  id                Int              @id @default(autoincrement())
+  section_id        Int
+  section           CourseSection    @relation(fields: [section_id], references: [id], onDelete: Cascade) // On delete section, delete enrollment
+  user_id           Int
+  user              User             @relation(fields: [user_id], references: [id], onDelete: Cascade) // On delete user, delete enrollment
+  enrollment_status EnrollmentStatus @default(PENDING)
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+}
+
+enum EnrollmentStatus {
+  PENDING
+  ENROLLED
+  DROPPED
+  COMPLETED
+}
+
+model CourseSectionFacultyAssignment {
+  id           Int           @id @default(autoincrement())
+  section_id   Int
+  section      CourseSection @relation(fields: [section_id], references: [id], onDelete: Cascade) // On delete section, delete faculty assignment
+  faculty_id   Int
+  faculty      User          @relation(fields: [faculty_id], references: [id], onDelete: Cascade) // On delete faculty, delete faculty assignment
+  faculty_role FacultyRole   @default(INSTRUCTOR)
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+}
+
+enum FacultyRole {
+  INSTRUCTOR
+  TEACHING_ASSISTANT
+}
+
+model CourseSectionMaterial {
+  id            Int           @id @default(autoincrement())
+  section_id    Int
+  section       CourseSection @relation(fields: [section_id], references: [id], onDelete: Cascade) // On delete section, delete material
+  title         String
+  description   String?
+  url           String
+  material_type MaterialType  @default(FILE)
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
+}
+
+enum MaterialType {
+  FILE
+  IMAGE
+  VIDEO
+  LINK
 }

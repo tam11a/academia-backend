@@ -10,12 +10,38 @@ import * as bcrypt from 'bcrypt';
 import * as speakeasy from 'speakeasy';
 import { nanoid } from 'nanoid';
 import { IPaginationQuery } from 'src/utils/pagination/query.dto';
+import { Prisma } from '@prisma/client';
 
 const saltOrRounds = 10;
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
+  private user_default_select: Prisma.UserSelect = {
+    id: true,
+    username: true,
+    email: true,
+    user_role: true,
+    is_active: true,
+    profile: {
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        bio: true,
+        dob: true,
+        phone: true,
+        secondary_phone: true,
+        secondary_address: true,
+        secondary_email: true,
+        address: true,
+        created_at: true,
+        updated_at: true,
+      },
+    },
+    created_at: true,
+    updated_at: true,
+  };
 
   async hashPassword(password: string) {
     return await bcrypt.hash(password, saltOrRounds);
@@ -61,31 +87,7 @@ export class UsersService {
             },
           },
         },
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          user_role: true,
-          is_active: true,
-          profile: {
-            select: {
-              id: true,
-              first_name: true,
-              last_name: true,
-              bio: true,
-              dob: true,
-              phone: true,
-              secondary_phone: true,
-              secondary_address: true,
-              secondary_email: true,
-              address: true,
-              created_at: true,
-              updated_at: true,
-            },
-          },
-          created_at: true,
-          updated_at: true,
-        },
+        select: this.user_default_select,
       });
 
       return {
@@ -101,7 +103,7 @@ export class UsersService {
     { search = '', limit = 10, page = 0 }: IPaginationQuery,
     user_role?: 'STUDENT' | 'FACULTY' | 'ADMIN',
   ) {
-    const data = await this.prisma.user.findMany({
+    const query: Prisma.UserFindManyArgs = {
       where: {
         OR: [
           {
@@ -127,35 +129,23 @@ export class UsersService {
       },
       take: limit,
       skip: page * limit,
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        user_role: true,
-        is_active: true,
-        profile: {
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-            bio: true,
-            dob: true,
-            phone: true,
-            secondary_phone: true,
-            secondary_address: true,
-            secondary_email: true,
-            address: true,
-            created_at: true,
-            updated_at: true,
-          },
-        },
-        created_at: true,
-        updated_at: true,
-      },
-    });
+      select: this.user_default_select,
+    };
+
+    const [
+      data, // data is an array of users
+      total, // total is the total number of users
+    ] = await this.prisma.$transaction([
+      this.prisma.user.findMany(query),
+      this.prisma.user.count({ where: query.where }),
+    ]);
+
     return {
       message: `List of users, limit: ${limit}, page: ${page}`,
       data,
+      total,
+      limit,
+      page,
     };
   }
 
@@ -168,31 +158,7 @@ export class UsersService {
       where: {
         id,
       },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        user_role: true,
-        is_active: true,
-        profile: {
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-            bio: true,
-            dob: true,
-            phone: true,
-            secondary_phone: true,
-            secondary_address: true,
-            secondary_email: true,
-            address: true,
-            created_at: true,
-            updated_at: true,
-          },
-        },
-        created_at: true,
-        updated_at: true,
-      },
+      select: this.user_default_select,
     });
 
     if (!data) {
@@ -248,31 +214,7 @@ export class UsersService {
             },
           },
         },
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          user_role: true,
-          is_active: true,
-          profile: {
-            select: {
-              id: true,
-              first_name: true,
-              last_name: true,
-              bio: true,
-              dob: true,
-              phone: true,
-              secondary_phone: true,
-              secondary_address: true,
-              secondary_email: true,
-              address: true,
-              created_at: true,
-              updated_at: true,
-            },
-          },
-          created_at: true,
-          updated_at: true,
-        },
+        select: this.user_default_select,
       });
 
       return {
@@ -298,6 +240,7 @@ export class UsersService {
         where: {
           id,
         },
+        select: this.user_default_select,
       });
       return {
         message: `User with id: ${id} has been deleted`,
