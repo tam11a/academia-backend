@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  profile    Profile? // This is a one-to-one relation
+  username   String   @unique
+  email      String   @unique
+  passhash   String   @default("") // This is a placeholder for the password hash
+  passphrase String   @default("") // This is a placeholder for the password salt for OTP generation
+  user_role  UserRole @default(STUDENT)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Profile {
+  id                Int       @id @default(autoincrement())
+  user_id           Int       @unique
+  user              User      @relation(fields: [user_id], references: [id])
+  first_name        String
+  last_name         String?
+  bio               String?
+  dob               DateTime?
+  phone             String
+  secondary_phone   String?
+  secondary_email   String?
+  address           String
+  secondary_address String?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+}
+
+enum UserRole {
+  STUDENT
+  FACULTY
+  ADMIN
+}
