@@ -1,7 +1,51 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CreateProfileDto } from './create-profile.dto';
 
 export class CreateUserDto {
+  @ApiProperty({
+    required: true,
+  })
+  first_name: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  last_name: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  bio: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  dob: Date;
+
+  @ApiProperty({
+    required: true,
+  })
+  phone: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  secondary_phone?: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  secondary_email?: string;
+
+  @ApiProperty({
+    required: true,
+  })
+  address: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  secondary_address?: string;
+
   @ApiProperty({
     required: true,
   })
@@ -24,10 +68,4 @@ export class CreateUserDto {
     default: true,
   })
   is_active: boolean;
-
-  @ApiProperty({
-    required: true,
-    type: CreateProfileDto,
-  })
-  profile: CreateProfileDto;
 }

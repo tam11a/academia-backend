@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -23,17 +27,15 @@ export class UsersService {
       password,
       user_role,
       is_active,
-      profile: {
-        first_name,
-        last_name,
-        bio,
-        dob,
-        phone,
-        secondary_phone,
-        secondary_email,
-        address,
-        secondary_address,
-      },
+      first_name,
+      last_name,
+      bio,
+      dob,
+      phone,
+      secondary_phone,
+      secondary_email,
+      address,
+      secondary_address,
     } = createUserDto;
 
     try {
@@ -65,7 +67,24 @@ export class UsersService {
           email: true,
           user_role: true,
           is_active: true,
-          profile: true,
+          profile: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+              bio: true,
+              dob: true,
+              phone: true,
+              secondary_phone: true,
+              secondary_address: true,
+              secondary_email: true,
+              address: true,
+              created_at: true,
+              updated_at: true,
+            },
+          },
+          created_at: true,
+          updated_at: true,
         },
       });
 
@@ -135,21 +154,161 @@ export class UsersService {
       },
     });
     return {
-      message: 'List of all users',
+      message: `List of users, limit: ${limit}, page: ${page}`,
       data,
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    if (!id) {
+      throw new BadRequestException('User id is required');
+    }
+
+    const data = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        user_role: true,
+        is_active: true,
+        profile: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            bio: true,
+            dob: true,
+            phone: true,
+            secondary_phone: true,
+            secondary_address: true,
+            secondary_email: true,
+            address: true,
+            created_at: true,
+            updated_at: true,
+          },
+        },
+        created_at: true,
+        updated_at: true,
+      },
+    });
+
+    if (!data) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      message: `User with id: ${id}`,
+      data,
+    };
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    console.log(updateUserDto);
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    if (!id) {
+      throw new BadRequestException('User id is required');
+    }
+
+    const {
+      email,
+      user_role,
+      is_active,
+      first_name,
+      last_name,
+      bio,
+      dob,
+      phone,
+      secondary_phone,
+      secondary_email,
+      address,
+      secondary_address,
+    } = updateUserDto;
+
+    try {
+      const data = await this.prisma.user.update({
+        where: {
+          id,
+        },
+        data: {
+          email,
+          user_role,
+          is_active,
+          profile: {
+            update: {
+              first_name,
+              last_name,
+              bio,
+              dob,
+              phone,
+              secondary_phone,
+              secondary_email,
+              address,
+              secondary_address,
+            },
+          },
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          user_role: true,
+          is_active: true,
+          profile: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+              bio: true,
+              dob: true,
+              phone: true,
+              secondary_phone: true,
+              secondary_address: true,
+              secondary_email: true,
+              address: true,
+              created_at: true,
+              updated_at: true,
+            },
+          },
+          created_at: true,
+          updated_at: true,
+        },
+      });
+
+      return {
+        message: `User with id: ${id} has been updated`,
+        data,
+      };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('User not found');
+      } else {
+        throw new BadRequestException(error?.meta?.cause || error);
+      }
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    if (!id) {
+      throw new BadRequestException('User id is required');
+    }
+
+    try {
+      const data = await this.prisma.user.delete({
+        where: {
+          id,
+        },
+      });
+      return {
+        message: `User with id: ${id} has been deleted`,
+        data,
+      };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('User not found');
+      } else {
+        throw new BadRequestException(error?.meta?.cause || error);
+      }
+    }
   }
 }

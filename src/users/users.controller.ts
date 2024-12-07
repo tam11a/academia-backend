@@ -16,7 +16,6 @@ import {
   LimitQuery,
   PageQuery,
   SearchQuery,
-  // SortQuery,
 } from 'src/utils/pagination/query.dto';
 import { ApiQuery } from '@nestjs/swagger';
 
@@ -35,7 +34,6 @@ export class UsersController {
     required: false,
     enum: ['STUDENT', 'FACULTY', 'ADMIN'],
   })
-  // @ApiQuery(SortQuery) // SortQuery, reusing the SortQuery from the pagination query
   @ApiQuery(PageQuery) // PageQuery, reusing the PageQuery from the pagination query
   @ApiQuery(LimitQuery) // LimitQuery, reusing the LimitQuery from the pagination query
   @ApiQuery(SearchQuery) // SearchQuery, reusing the SearchQuery from the pagination query
