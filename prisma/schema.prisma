@@ -92,22 +92,12 @@ model CourseSection {
   course                         Course                           @relation(fields: [course_id], references: [id], onDelete: Cascade) // On delete course, delete section
   section_title                  String
   section_description            String?
-  section_start_date             DateTime
-  section_end_date               DateTime
   section_total_seats            Int
-  section_status                 SectionStatus                    @default(PLANNED)
   created_at                     DateTime                         @default(now())
   updated_at                     DateTime                         @updatedAt
   CourseSectionMaterial          CourseSectionMaterial[]
   CourseSectionEnrollment        CourseSectionEnrollment[]
   CourseSectionFacultyAssignment CourseSectionFacultyAssignment[]
-}
-
-enum SectionStatus {
-  PLANNED
-  ENROLLING
-  ONGOING
-  COMPLETED
 }
 
 model CourseSectionEnrollment {
