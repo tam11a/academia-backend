@@ -19,6 +19,8 @@ import {
   SearchQuery,
 } from 'src/utils/pagination/query.dto';
 
+// @ApiBearerAuth()
+// @UseGuards(AuthGuard)
 @ApiTags('Courses')
 @Controller('sections')
 export class SectionController {
