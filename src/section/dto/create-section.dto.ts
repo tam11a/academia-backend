@@ -18,6 +18,7 @@ export class CreateSectionDto {
 
   @ApiProperty({
     required: false,
+    default: 0,
   })
   section_total_seats?: number;
 }

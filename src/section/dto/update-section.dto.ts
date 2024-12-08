@@ -1,12 +1,6 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { CreateSectionDto } from './create-section.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateSectionDto extends PartialType(CreateSectionDto) {
-  @ApiProperty({
-    required: false,
-  })
-  course_id?: number;
-
+export class UpdateSectionDto {
   @ApiProperty({
     required: false,
   })
@@ -19,6 +13,7 @@ export class UpdateSectionDto extends PartialType(CreateSectionDto) {
 
   @ApiProperty({
     required: false,
+    default: 0,
   })
   section_total_seats?: number;
 }

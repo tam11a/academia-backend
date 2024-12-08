@@ -12,6 +12,36 @@ import { Prisma } from '@prisma/client';
 @Injectable()
 export class CoursesService {
   constructor(private prisma: PrismaService) {}
+  private courses_default_select: Prisma.CourseSelect = {
+    id: true,
+    course_title: true,
+    course_description: true,
+    course_cover_url: true,
+    course_start_date: true,
+    course_end_date: true,
+    course_code: true,
+    course_credits: true,
+    course_status: true,
+    course_sections: {
+      select: {
+        id: true,
+        section_title: true,
+        section_description: true,
+        section_total_seats: true,
+        _count: {
+          select: {
+            course_section_student_enrollments: true,
+            course_section_faculty_assignments: true,
+          },
+        },
+        created_at: true,
+        updated_at: true,
+      },
+    },
+    created_at: true,
+    updated_at: true,
+  };
+
   async create(createCourseDto: CreateCourseDto) {
     const {
       course_title,
@@ -77,6 +107,7 @@ export class CoursesService {
       },
       take: limit,
       skip: page * limit,
+      select: this.courses_default_select,
     };
 
     const [
@@ -105,6 +136,7 @@ export class CoursesService {
       where: {
         id,
       },
+      select: this.courses_default_select,
     });
 
     if (!data) throw new NotFoundException('Course not found');
